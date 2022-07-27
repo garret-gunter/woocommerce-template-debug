@@ -30,29 +30,29 @@ add_action('woocommerce_before_template_part', 'woocommerce_template_debug_befor
  */
 function woocommerce_template_debug_before_template_part()
 {
-	if (WP_DEBUG) {
-		$args = func_get_args();
+	$args            = func_get_args();
+	$wooTemplate     = ($args[0] ?? 'N/A');
+	$locatedTemplate = ($args[2] ?? 'N/A');
+	$templatePath    = ($args[1] ?? 'N/A');
 
-		$wooTemplate       = ($args[0] ?? 'N/A');
-		$locatedTemplate   = ($args[2] ?? 'N/A');
-		$templatePath      = ($args[1] ?? 'N/A');
-		$templateArguments = print_r($args[3] ?? [], true);
+	// Intent the template arguments.
+	$templateArguments = print_r($args[3] ?? [], true);
+	$argumentLines     = explode(PHP_EOL, $templateArguments);
 
-		$argumentLines = explode(PHP_EOL, $templateArguments);
+	foreach ($argumentLines as $number => $argumentLine) {
+		$argumentLines[$number] = "                        $argumentLine";
+	}
 
-		foreach ($argumentLines as $number => $argumentLine) {
-			$argumentLines[$number] = "                        $argumentLine";
-		}
+	$templateArguments = implode(PHP_EOL, $argumentLines);
 
-		$templateArguments = implode(PHP_EOL, $argumentLines);
+	// We need to make the located path relative to the Wordpress base directory.
+	$prefixPosition = strpos($locatedTemplate, ABSPATH);
 
-		$prefixPosition = strpos($locatedTemplate, ABSPATH);
+	if ($prefixPosition === 0) {
+		$locatedTemplate = '/' . substr($locatedTemplate, strlen(ABSPATH));
+	}
 
-		if ($prefixPosition === 0) {
-			$locatedTemplate = '/' . substr($locatedTemplate, strlen(ABSPATH));
-		}
-
-		echo <<<EOF
+	echo <<<EOF
 
 <!-- Woocommerce DEBUG TEMPLATE START: $wooTemplate
 
@@ -63,7 +63,6 @@ $templateArguments
 -->
 
 EOF;
-	}
 }
 
 add_action('woocommerce_after_template_part', 'woocommerce_template_debug_after_template_part', 99, 4);
@@ -75,13 +74,11 @@ add_action('woocommerce_after_template_part', 'woocommerce_template_debug_after_
  */
 function woocommerce_template_debug_after_template_part()
 {
-	if (WP_DEBUG) {
-		$args        = func_get_args();
-		$wooTemplate = ($args[0] ?? 'N/A');
+	$args        = func_get_args();
+	$wooTemplate = ($args[0] ?? 'N/A');
 
-		echo <<<EOF
+	echo <<<EOF
 <!-- Woocommerce DEBUG TEMPLATE END: $wooTemplate -->
 
 EOF;
-	}
 }
