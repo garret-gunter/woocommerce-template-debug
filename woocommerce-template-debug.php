@@ -41,7 +41,7 @@ function woo_debug_before_template_part()
 		$argumentLines = explode(PHP_EOL, $templateArguments);
 
 		foreach ($argumentLines as $number => $argumentLine) {
-			$argumentLines[$number] = "\t\t$argumentLine";
+			$argumentLines[$number] = "                        $argumentLine";
 		}
 
 		$templateArguments = implode(PHP_EOL, $argumentLines);
@@ -53,12 +53,15 @@ function woo_debug_before_template_part()
 		}
 
 		echo <<<EOF
+
 <!-- WOO DEBUG TEMPLATE START: $wooTemplate
-	Located Template: $locatedTemplate
-	Template Path: $templatePath
-	Template Arguments: 
+
+    Located Template: $locatedTemplate
+    Template Path: $templatePath
+    Template Arguments: 
 $templateArguments
 -->
+
 EOF;
 	}
 }
@@ -76,6 +79,9 @@ function woo_debug_after_template_part()
 		$args        = func_get_args();
 		$wooTemplate = ($args[0] ?? 'N/A');
 
-		echo "<!-- WOO DEBUG TEMPLATE END: $wooTemplate -->";
+		echo <<<EOF
+<!-- WOO DEBUG TEMPLATE END: $wooTemplate -->
+
+EOF;
 	}
 }
