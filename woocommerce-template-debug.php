@@ -21,14 +21,14 @@ if (!defined('WP_DEBUG') || !WP_DEBUG) {
 	return;
 }
 
-add_action('woocommerce_before_template_part', 'woo_debug_before_template_part', 0, 4);
+add_action('woocommerce_before_template_part', 'woocommerce_template_debug_before_template_part', 0, 4);
 
 /**
  * Print debug information about Woocommerce templates before the template is emitted.
  *
  * @return void
  */
-function woo_debug_before_template_part()
+function woocommerce_template_debug_before_template_part()
 {
 	if (WP_DEBUG) {
 		$args = func_get_args();
@@ -54,7 +54,7 @@ function woo_debug_before_template_part()
 
 		echo <<<EOF
 
-<!-- WOO DEBUG TEMPLATE START: $wooTemplate
+<!-- Woocommerce DEBUG TEMPLATE START: $wooTemplate
 
     Located Template: $locatedTemplate
     Template Path: $templatePath
@@ -66,21 +66,21 @@ EOF;
 	}
 }
 
-add_action('woocommerce_after_template_part', 'woo_debug_after_template_part', 99, 4);
+add_action('woocommerce_after_template_part', 'woocommerce_template_debug_after_template_part', 99, 4);
 
 /**
  * Print a message signaling the end of the Woocommerce template.
  *
  * @return void
  */
-function woo_debug_after_template_part()
+function woocommerce_template_debug_after_template_part()
 {
 	if (WP_DEBUG) {
 		$args        = func_get_args();
 		$wooTemplate = ($args[0] ?? 'N/A');
 
 		echo <<<EOF
-<!-- WOO DEBUG TEMPLATE END: $wooTemplate -->
+<!-- Woocommerce DEBUG TEMPLATE END: $wooTemplate -->
 
 EOF;
 	}
