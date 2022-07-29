@@ -35,22 +35,12 @@ function woocommerce_template_debug_before_template_part()
 	$locatedTemplate = ($args[2] ?? 'N/A');
 	$templatePath    = ($args[1] ?? 'N/A');
 
-	// Intent the template arguments.
+	// Indent the template arguments.
 	$templateArguments = print_r($args[3] ?? [], true);
-	$argumentLines     = explode(PHP_EOL, $templateArguments);
+	$templateArguments = woocommerce_template_debug_indent_lines($templateArguments, 6);
 
-	foreach ($argumentLines as $number => $argumentLine) {
-		$argumentLines[$number] = "                        $argumentLine";
-	}
-
-	$templateArguments = implode(PHP_EOL, $argumentLines);
-
-	// We need to make the located path relative to the Wordpress base directory.
-	$prefixPosition = strpos($locatedTemplate, ABSPATH);
-
-	if ($prefixPosition === 0) {
-		$locatedTemplate = '/' . substr($locatedTemplate, strlen(ABSPATH));
-	}
+	// We need to make the located path relative to the WordPress base directory.
+	$locatedTemplate = woocommerce_template_debug_wordpress_relative_path($locatedTemplate);
 
 	echo <<<EOF
 
@@ -81,4 +71,78 @@ function woocommerce_template_debug_after_template_part()
 <!-- Woocommerce DEBUG TEMPLATE END: $wooTemplate -->
 
 EOF;
+}
+
+add_filter('wc_get_template_part', 'woocommerce_template_debug_wc_get_template_part', 0, 3);
+
+/**
+ * Print debug information about Woocommerce templates parts before the template is emitted.
+ *
+ * @return string
+ */
+function woocommerce_template_debug_wc_get_template_part(): string
+{
+	$args            = func_get_args();
+	$wooTemplate     = ($args[0] ?? 'N/A');
+	$name    = ($args[1] ?? 'N/A');
+	$slug = ($args[2] ?? 'N/A');
+
+	// We need to make the located path relative to the WordPress base directory.
+	$wooTemplate = woocommerce_template_debug_wordpress_relative_path($wooTemplate);
+
+	$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10);
+	$calleeBacktrace = $backtrace[3];
+	$calleeBacktrace['file'] = woocommerce_template_debug_wordpress_relative_path($calleeBacktrace['file']);
+
+	$callee = print_r($calleeBacktrace, true);
+	$callee = woocommerce_template_debug_indent_lines($callee, 3);
+
+	echo <<<EOF
+
+<!-- Woocommerce DEBUG TEMPLATE PART: $slug-$name.php
+    Located Template: $wooTemplate
+    Slug: $slug
+    Name: $name
+    Source:
+$callee
+-->
+EOF;
+
+	return $args[0];
+}
+
+/**
+ * Get the path of the file relative to the WordPress base directory.
+ *
+ * @param string $file
+ *
+ * @return string
+ */
+function woocommerce_template_debug_wordpress_relative_path(string $file): string {
+	$prefixPosition = strpos($file, ABSPATH);
+
+	if ($prefixPosition === 0) {
+		$file = '/' . substr($file, strlen(ABSPATH));
+	}
+
+	return $file;
+}
+
+/**
+ * Indent each line with spaces.
+ *
+ * @param string $string
+ * @param int $indents
+ *
+ * @return string
+ */
+function woocommerce_template_debug_indent_lines(string $string, int $indents): string {
+	$indentString = str_repeat('    ', $indents);
+	$lines = explode(PHP_EOL, $string);
+
+	foreach ($lines as $number => $line) {
+		$lines[$number] = $indentString . $line;
+	}
+
+	return implode(PHP_EOL, $lines);
 }
